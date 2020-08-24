@@ -1,11 +1,19 @@
 const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017/rusty_crusts';
+const ytdl = require('ytdl-core');
 
-var db = await MongoClient.connect(url);
+var db = await MongoClient.connect(url).db();
 db.close();
 
 async function createPlaylist(user, name, songs){
     await db.open();
+
+    if (db.collection('playlists').find({
+        user: user,
+        name: name
+    }).first()){
+        return;
+    }
     
     db.collection('playlists').insertOne({
         user: user,
@@ -29,19 +37,33 @@ async function addPlaylistToQueue(user, name, queue){
     
     db.close();
 
-    for (let song of songs) {
-        queue.unshift(song);
+    for (let url of songs){
+        let song = await ytdl(song, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
+        
+        getYoutubeTitle(getYouTubeID(url), (err, title) => {
+            queue.unshift([title, song]);
+        });
     }
 }
 
-async function showPlaylists(user){
+async function getPlaylists(user, name=null){
     db.open();
 
-    let playlists = await db.collection("playlists").find({
-        user: user
-    }).toArray();
+    let playlist;
+
+    if (!name){
+        playlists = await db.collection("playlists").find({
+            user: user
+        }).toArray();
+    }
+    else{
+        playlists = await db.collection("playlists").find({
+            user: user,
+            name: name
+        }).first();
+    }
 
     return playlists;
 }
 
-export { createPlaylist, addPlaylistToQueue, showPlaylists }
+export { createPlaylist, addPlaylistToQueue, getPlaylists }

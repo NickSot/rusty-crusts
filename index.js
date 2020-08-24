@@ -5,7 +5,7 @@ var ytStream = require('youtube-audio-stream');
 var getYoutubeTitle = require('get-youtube-title');
 var getYouTubeID = require('get-youtube-id');
 var fs = require('fs');
-import { createPlaylist, addPlaylistToQueue, showPlaylists } from './playlist_manager';
+import { createPlaylist, addPlaylistToQueue, getPlaylists } from './playlist_manager';
 
 var queue = [];
 
@@ -45,22 +45,37 @@ function handle_queue(){
 client.on('message', async (msg) => {
     let message = msg.content;
 
-    if (message.match(/^!play /g)){
-        //add case for playlists
+    if (message.match(/^!playlist\s\w+\s/g)){
+        songs = message.split(/^!playlist\s\w+\s/g)[1].split(',').map(x => x.trim());
 
+        createPlaylist(msg.member.nickname, message.split(' ')[1], songs);
+    }
+
+    if (message.match(/^!play /g)){
         let url = message.split(/^!play /g)[1];
         let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
 
-        let songName = getYoutubeTitle(getYouTubeID(url), (err, title) => {
-            queue.unshift([title, song]);
+        if (url.match(/^https:\/\/\w+\\.youtube\\.com/g)){
+            getYoutubeTitle(getYouTubeID(url), (err, title) => {
+                queue.unshift([title, song]);
 
-            let titles = queue.map(x => x[0])
+                let titles = queue.map(x => x[0])
+                let channel = client.channels.cache.get('746057842032640024');
+                channel.send(`Queue: {${titles.join(', ')}}`);
+
+                if (song == Object.values(queue[queue.length - 1])[1])
+                    handle_queue();
+            });
+        }else{
+            addPlaylistToQueue(msg.member.nickname, message.split(' ')[1], queue);
+
+            let titles = queue.map(x => x[0]);
             let channel = client.channels.cache.get('746057842032640024');
             channel.send(`Queue: {${titles.join(', ')}}`);
 
-            if (song == Object.values(queue[queue.length - 1])[1])
-                handle_queue();
-        });
+            if (getPlaylists(msg.member.nickname, message.split(' ')[1]).songs[0] == Object.values(queue[queue.length - 1])[1])
+                    handle_queue();
+        }
     }
 });
 
