@@ -5,6 +5,7 @@ var ytStream = require('youtube-audio-stream');
 var getYoutubeTitle = require('get-youtube-title');
 var getYouTubeID = require('get-youtube-id');
 var fs = require('fs');
+import { createPlaylist, addPlaylistToQueue, showPlaylists } from './playlist_manager';
 
 var queue = [];
 
@@ -45,6 +46,8 @@ client.on('message', async (msg) => {
     let message = msg.content;
 
     if (message.match(/^!play /g)){
+        //add case for playlists
+
         let url = message.split(/^!play /g)[1];
         let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
 
