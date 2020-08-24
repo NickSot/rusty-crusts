@@ -1,0 +1,23 @@
+{
+  "name": "rustycrust",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.3.1",
+    "get-youtube-id": "^1.0.1",
+    "get-youtube-title": "^1.0.1",
+    "node-gyp": "^7.1.0",
+    "opusscript": "0.0.7",
+    "rebuild": "^0.1.2",
+    "worker-threads": "^1.0.0",
+    "youtube-audio-stream": "^0.3.6",
+    "ytdl-core": "^3.2.2",
+    "ytdl-core-discord": "^1.2.1"
+  }
+}
