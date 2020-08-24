@@ -4,13 +4,14 @@ const ytdl = require('ytdl-core');
 var ytStream = require('youtube-audio-stream');
 var getYoutubeTitle = require('get-youtube-title');
 var getYouTubeID = require('get-youtube-id');
+var fs = require('fs');
 
 var queue = [];
 
 var dispatcher;
 var connection;
 
-const token = 'NzQ3MDcxMTM4OTAyOTY2Mjgz.X0JiNw.onJ-CfYgGGWM7nqXxnDS7geJrKw';
+const token = JSON.parse(fs.readFileSync('./token.json')).token;
 
 client.on('ready', async () => {
     console.log('Bot is ready to go to Ram Ranch\'s house...');
