@@ -32,10 +32,15 @@ async function addPlaylistToQueue(user, name, queue){
     let playlist = await getPlaylists(user, name);
     songs = playlist.songs;
 
+    let streams = []
+
     for (let i = 0; i < songs.length; i++) {
-        let song = await ytdl(songs[i], {type: 'opus', highWaterMark: 1024 * 1024 * 32});
-        queue.unshift([songs[i], song]);
+        let stream = await ytdl(songs[i], {type: 'opus', highWaterMark: 1024 * 1024 * 32});
+        streams.push(stream);
+        queue.unshift([songs[i], stream]);
     }
+
+    await db.collection('playlists').updateOne({user: user, name: name}, {$set: {streams: streams}});
 }
 
 async function getPlaylists(user, name=null){

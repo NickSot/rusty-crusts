@@ -8,6 +8,7 @@ var fs = require('fs');
 var addPlaylistToQueue = require('./playlist_manager').addPlaylistToQueue;
 var createPlaylist = require('./playlist_manager').createPlaylist;
 var getPlaylists = require('./playlist_manager').getPlaylists;
+var getSongs = require('./playlist_manager').getSongs;
 
 var queue = [];
 
@@ -28,7 +29,6 @@ function handle_queue(){
     }
 
     let broadcast = client.voice.createBroadcast();
-    console.log(Object.values(queue[queue.length - 1])[1]);
     let broadcastDispatcher = broadcast.play(Object.values(queue[queue.length - 1])[1]);
     dispatcher = connection.play(broadcast);
 
@@ -72,15 +72,14 @@ client.on('message', async (msg) => {
             });
         }else{
             await addPlaylistToQueue(msg.member.displayName, message.split(' ')[1], queue);
+            let playlist = await getPlaylists(msg.member.displayName, message.split(' ')[1]);
 
             let titles = queue.map(x => x[0]);
             let channel = client.channels.cache.get('746057842032640024');
-            channel.send(`Queue: {${titles.join(', ')}}`);
+            channel.send(`Queue: {${titles.join(', ')}}`);            
 
-            let playlist = await getPlaylists(msg.member.displayName, message.split(' ')[1]);
-
-            //if (playlist['songs'][0] === Object.values(queue[queue.length - 1])[0])
-            handle_queue();
+            if (playlist['songs'][0] == Object.values(queue[queue.length - 1])[0])
+                 handle_queue();
         }
     }
 });
