@@ -1,53 +1,57 @@
 const MongoClient = require('mongodb').MongoClient;
-const url = 'mongodb://localhost:27017/rusty_crusts';
+const url = 'mongodb://localhost:27017/';
 const ytdl = require('ytdl-core');
-
-var db = await MongoClient.connect(url).db();
-db.close();
+var getYoutubeTitle = require('get-youtube-title');
+var getYouTubeID = require('get-youtube-id');
 
 async function createPlaylist(user, name, songs){
-    await db.open();
+    let db = await new MongoClient(url, { useUnifiedTopology: true }).connect();
+    db = db.db('rusty_crusts');
 
-    if (db.collection('playlists').find({
+    if (await db.collection('playlists').findOne({
         user: user,
         name: name
-    }).first()){
+    })){
         return;
     }
     
     db.collection('playlists').insertOne({
         user: user,
         name: name,
-        songs: songs
+        urls: songs,
+        songs: songs.map(x => ytdl(x, {type: 'opus', highWaterMark: 1024 * 1024 * 32})),
     }, (error, result) => {
-        db.close();
-        if (result){
-            console.log(result);
-        }
+        if (error)
+            throw error;
     });
 }
 
 async function addPlaylistToQueue(user, name, queue){
-    await db.open();
+    let db = await new MongoClient(url, { useUnifiedTopology: true }).connect();
+    db = db.db('rusty_crusts');
     
-    let songs = db.collection('playlists').find({
-        user: user,
-        name: name
-    }).first().songs;
-    
-    db.close();
+    let playlist = await getPlaylists(user, name);
+    songs = playlist.songs;
+    let urls = playlist.urls;
 
-    for (let url of songs){
-        let song = await ytdl(song, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
-        
-        getYoutubeTitle(getYouTubeID(url), (err, title) => {
-            queue.unshift([title, song]);
+    /*for (let url of songs){
+        let song = ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
+
+        await getYoutubeTitle(getYouTubeID(url), async (err, title) => {
+            await queue.unshift([title, song]);
         });
+
+        console.log(queue.length);
+    }*/
+
+    for (let i = 0; i < songs.length; i++) {
+        queue.unshift([urls[i], songs[i]]);
     }
 }
 
 async function getPlaylists(user, name=null){
-    db.open();
+    let db = await new MongoClient(url, { useUnifiedTopology: true }).connect();
+    db = db.db('rusty_crusts');
 
     let playlist;
 
@@ -57,13 +61,13 @@ async function getPlaylists(user, name=null){
         }).toArray();
     }
     else{
-        playlists = await db.collection("playlists").find({
+        playlists = await db.collection("playlists").findOne({
             user: user,
             name: name
-        }).first();
+        });
     }
 
     return playlists;
 }
 
-export { createPlaylist, addPlaylistToQueue, getPlaylists }
+module.exports = { createPlaylist, addPlaylistToQueue, getPlaylists }
