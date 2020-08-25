@@ -18,8 +18,7 @@ async function createPlaylist(user, name, songs){
     db.collection('playlists').insertOne({
         user: user,
         name: name,
-        urls: songs,
-        songs: songs.map(x => ytdl(x, {type: 'opus', highWaterMark: 1024 * 1024 * 32})),
+        songs: songs
     }, (error, result) => {
         if (error)
             throw error;
@@ -32,20 +31,10 @@ async function addPlaylistToQueue(user, name, queue){
     
     let playlist = await getPlaylists(user, name);
     songs = playlist.songs;
-    let urls = playlist.urls;
-
-    /*for (let url of songs){
-        let song = ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
-
-        await getYoutubeTitle(getYouTubeID(url), async (err, title) => {
-            await queue.unshift([title, song]);
-        });
-
-        console.log(queue.length);
-    }*/
 
     for (let i = 0; i < songs.length; i++) {
-        queue.unshift([urls[i], songs[i]]);
+        let song = await ytdl(songs[i], {type: 'opus', highWaterMark: 1024 * 1024 * 32});
+        queue.unshift([songs[i], song]);
     }
 }
 

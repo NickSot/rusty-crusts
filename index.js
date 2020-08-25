@@ -59,7 +59,6 @@ client.on('message', async (msg) => {
 
         if (url.match(/^https:/g)){
             let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
-            console.log('HERE');
 
             getYoutubeTitle(getYouTubeID(url), (err, title) => {
                 queue.unshift([title, song]);
@@ -80,8 +79,8 @@ client.on('message', async (msg) => {
 
             let playlist = await getPlaylists(msg.member.displayName, message.split(' ')[1]);
 
-            //if (playlist['songs'][0] === Object.values(queue[queue.length - 1])[1])
-                    handle_queue();
+            //if (playlist['songs'][0] === Object.values(queue[queue.length - 1])[0])
+            handle_queue();
         }
     }
 });
