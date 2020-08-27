@@ -58,27 +58,35 @@ client.on('message', async (msg) => {
         let url = message.split(/^!play /g)[1];
 
         if (url.match(/^https:/g)){
-            let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 32});
+            let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 128});
 
             getYoutubeTitle(getYouTubeID(url), (err, title) => {
-                queue.unshift([title, song]);
+                queue.unshift([title, song, msg.member.displayName]);
 
                 let titles = queue.map(x => x[0])
                 let channel = client.channels.cache.get('746057842032640024');
                 channel.send(`Queue: {${titles.join(', ')}}`);
 
-                if (song == Object.values(queue[queue.length - 1])[1])
+                if (song == Object.values(queue[queue.length - 1])[1] &&
+                    Object.values(queue[queue.length - 1])[2] === msg.member.displayName)
                     handle_queue();
             });
         }else{
             await addPlaylistToQueue(msg.member.displayName, message.split(' ')[1], queue);
             let playlist = await getPlaylists(msg.member.displayName, message.split(' ')[1]);
 
+            if (!playlist){
+                let channel = client.channels.cache.get('746057842032640024');
+                channel.send("There is no such playlist in your shit!")
+                return
+            }
+
             let titles = queue.map(x => x[0]);
             let channel = client.channels.cache.get('746057842032640024');
             channel.send(`Queue: {${titles.join(', ')}}`);            
 
-            if (playlist['songs'][0] == Object.values(queue[queue.length - 1])[0])
+            if (playlist['songs'][0] == Object.values(queue[queue.length - 1])[0] &&
+                msg.member.displayName == Object.values(queue[queue.length - 1])[2])
                  handle_queue();
         }
     }
