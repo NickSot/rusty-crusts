@@ -9,6 +9,8 @@ var addPlaylistToQueue = require('./playlist_manager').addPlaylistToQueue;
 var createPlaylist = require('./playlist_manager').createPlaylist;
 var getPlaylists = require('./playlist_manager').getPlaylists;
 var getSongs = require('./playlist_manager').getSongs;
+var voiceChannelId = '746057842531893268';
+var textChannelId = '749343170093121626';
 
 var queue = [];
 
@@ -19,7 +21,7 @@ const token = JSON.parse(fs.readFileSync('./token.json')).token;
 
 client.on('ready', async () => {
     console.log('Bot is ready to go to Ram Ranch\'s house...');
-    let channel = client.channels.cache.get('746057842531893268');
+    let channel = client.channels.cache.get(voiceChannelId);
     connection = await channel.join();
 });
 
@@ -35,7 +37,7 @@ function handle_queue(){
     let titles = queue.map(x => x[0])
     console.log(titles.join(', '));
 
-    let channel = client.channels.cache.get('746057842032640024');
+    let channel = client.channels.cache.get(textChannelId);
     channel.send(`Queue: {${titles.join(', ')}}`);
 
     broadcastDispatcher.on('finish', () => {
@@ -64,7 +66,7 @@ client.on('message', async (msg) => {
                 queue.unshift([title, song, msg.member.displayName]);
 
                 let titles = queue.map(x => x[0])
-                let channel = client.channels.cache.get('746057842032640024');
+                let channel = client.channels.cache.get(textChannelId);
                 channel.send(`Queue: {${titles.join(', ')}}`);
 
                 if (song == Object.values(queue[queue.length - 1])[1] &&
@@ -76,13 +78,13 @@ client.on('message', async (msg) => {
             let playlist = await getPlaylists(msg.member.displayName, message.split(' ')[1]);
 
             if (!playlist){
-                let channel = client.channels.cache.get('746057842032640024');
+                let channel = client.channels.cache.get(textChannelId);
                 channel.send("There is no such playlist in your shit!")
                 return
             }
 
             let titles = queue.map(x => x[0]);
-            let channel = client.channels.cache.get('746057842032640024');
+            let channel = client.channels.cache.get(textChannelId);
             channel.send(`Queue: {${titles.join(', ')}}`);            
 
             if (playlist['songs'][0] == Object.values(queue[queue.length - 1])[0] &&
