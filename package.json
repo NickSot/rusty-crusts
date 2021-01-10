@@ -9,16 +9,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.3.1",
+    "discord.js": "^12.5.1",
     "get-youtube-id": "^1.0.1",
     "get-youtube-title": "^1.0.1",
-    "mongodb": "^3.6.0",
-    "node-gyp": "^7.1.0",
+    "mongodb": "^3.6.3",
+    "node-gyp": "^7.1.2",
     "opusscript": "0.0.7",
     "rebuild": "^0.1.2",
     "worker-threads": "^1.0.0",
     "youtube-audio-stream": "^0.3.6",
-    "ytdl-core": "^3.2.2",
-    "ytdl-core-discord": "^1.2.1"
+    "ytdl-core": "^4.4.2",
+    "ytdl-core-discord": "^1.2.4"
   }
 }

@@ -8,6 +8,7 @@ var fs = require('fs');
 var addPlaylistToQueue = require('./playlist_manager').addPlaylistToQueue;
 var createPlaylist = require('./playlist_manager').createPlaylist;
 var getPlaylists = require('./playlist_manager').getPlaylists;
+var deletePlaylists = require('./playlist_manager').deletePlaylists;
 var getSongs = require('./playlist_manager').getSongs;
 var voiceChannelId = '746057842531893268';
 var textChannelId = '749343170093121626';
@@ -56,11 +57,28 @@ client.on('message', async (msg) => {
         createPlaylist(msg.member.displayName, message.split(' ')[1], songs);
     }
 
+    if (message.match(/^!delete\s\w+/g)){
+        deletePlaylists(msg.member.displayName, message.split(' '));
+    }
+
+    if (message.match(/^!playlists/g)){
+        let playlists = await getPlaylists(msg.member.displayName);
+
+        let names = [];
+
+        playlists.forEach(playlist => {
+            names.unshift(playlist.name);
+        });
+
+        let channel = client.channels.cache.get(textChannelId);
+        channel.send(`Playlists: {${names.join(', ')}}`);
+    }
+
     if (message.match(/^!play /g)){
         let url = message.split(/^!play /g)[1];
 
         if (url.match(/^https:/g)){
-            let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 128});
+            let song = await ytdl(url, {type: 'opus', highWaterMark: 1024 * 1024 * 256});
 
             getYoutubeTitle(getYouTubeID(url), (err, title) => {
                 queue.unshift([title, song, msg.member.displayName]);
@@ -79,8 +97,8 @@ client.on('message', async (msg) => {
 
             if (!playlist){
                 let channel = client.channels.cache.get(textChannelId);
-                channel.send("There is no such playlist in your shit!")
-                return
+                channel.send("There is no such playlist in your shit!");
+                return;
             }
 
             let titles = queue.map(x => x[0]);

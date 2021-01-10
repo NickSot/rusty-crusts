@@ -18,7 +18,7 @@ async function createPlaylist(user, name, songs){
         user: user,
         name: name,
         songs: songs
-    }, (error, result) => {
+    }, (error) => {
         if (error)
             throw error;
     });
@@ -39,7 +39,7 @@ async function addPlaylistToQueue(user, name, queue){
     let streams = []
 
     for (let i = 0; i < songs.length; i++) {
-        let stream = await ytdl(songs[i], {type: 'opus', highWaterMark: 1024 * 1024 * 128});
+        let stream = await ytdl(songs[i], {type: 'opus', highWaterMark: 1024 * 1024 * 256});
         streams.push(stream);
         queue.unshift([songs[i], stream, user, name]);
     }
@@ -51,7 +51,7 @@ async function getPlaylists(user, name=null){
     let db = await new MongoClient(url, { useUnifiedTopology: true }).connect();
     db = db.db('rusty_crusts');
 
-    let playlist;
+    let playlists;
 
     if (!name){
         playlists = await db.collection("playlists").find({
@@ -68,4 +68,22 @@ async function getPlaylists(user, name=null){
     return playlists;
 }
 
-module.exports = { createPlaylist, addPlaylistToQueue, getPlaylists }
+async function deletePlaylists(user, names=null){
+    let db = await new MongoClient(url, {useUnifiedTopology: true}).connect();
+    db = db.db('rusty_crusts');
+
+    if (!getPlaylists(user, names)){
+        return;
+    }
+
+    if (!names){
+        await db.collection('playlists').deleteMany({user: user});
+    }
+    else{
+        for (let i = 0; i < names.length; i++){
+            await db.collection('playlists').deleteOne({user: user, name: names[i]});
+        }
+    }
+}
+
+module.exports = { createPlaylist, addPlaylistToQueue, getPlaylists, deletePlaylists }
